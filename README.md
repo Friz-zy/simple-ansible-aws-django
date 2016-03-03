@@ -118,12 +118,14 @@ You should provide this variables to the `create_project.yml`:
 - project_admin_mail
 
 If you want download existed project, you should provide `git_url` variable. Project should have this structure:
+```
 manage.py
 project_name/
 ..__init__.py
 ..settings.py
 ..urls.py
 ..wsgi.py
+```
 
 `create_project.yml` will:
 - download or create project
