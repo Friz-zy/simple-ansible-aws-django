@@ -82,8 +82,9 @@ ansible-playbook setup_aws.yml
 
 ### Install Django
 
+Using dynamic inventory apply to `tag_Name_test_django` hosts:
 ```bash
-ansible-playbook -i ec2.py setup_django.yml
+ansible-playbook -i inventory setup_django.yml
 ```
 
 `setup_django.yml` install with apt:
@@ -104,8 +105,9 @@ And create:
 
 ### Create Django project
 
+Using dynamic inventory apply to `tag_Name_test_django` hosts:
 ```bash
-ansible-playbook -i ec2.py create_project.yml
+ansible-playbook -i inventory create_project.yml
 ```
 
 You should provide this variables to the `create_project.yml`:
