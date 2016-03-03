@@ -1,0 +1,9 @@
+---
+- hosts: tag_Name_test_django
+  sudo: yes 
+  remote_user: ubuntu
+
+  tasks:
+    - include: ./roles/django-project/tasks/install.yml    
+
+     

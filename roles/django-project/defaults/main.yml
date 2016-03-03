@@ -1,0 +1,7 @@
+projects_dir: /apps
+db_engine: mysql
+db_hostname: localhost
+db_name: django
+db_username: admin
+db_password: admin
+db_port: 3306

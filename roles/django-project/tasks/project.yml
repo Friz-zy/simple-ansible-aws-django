@@ -1,0 +1,59 @@
+---
+- name: Clone Git Project
+  git: repo={{ git_url }} dest={{ projects_dir }}/{{ project_name }}
+  when: git_url is defined
+
+- name: Create directory for project
+  file: path={{ projects_dir }}/{{ project_name }} state=directory
+  when: git_url is not defined
+
+- name: Django Startproject
+  shell: django-admin startproject {{ project_name }} {{ projects_dir }}/{{ project_name }}/
+  when: git_url is not defined
+
+- name: Copy settings overrides to Project directory
+  template: src=overrides.j2 dest={{ projects_dir }}/{{ project_name }}/{{ project_name }}/overrides
+
+- name: Apply overrides to settings.py
+  shell: cat overrides >> settings.py chdir={{ projects_dir }}/{{ project_name }}/{{ project_name }}/
+
+- name: Setup Database with Django migration
+  django_manage: command={{ item }} app_path={{ projects_dir }}/{{ project_name }}
+  with_items:
+    - makemigrations
+    - migrate
+
+- name: Copy superuser settings to Project directory
+  template: src=admin.j2 dest={{ projects_dir }}/{{ project_name }}/{{ project_name }}/admin
+
+- name: Create an initial superuser
+  shell: cat ./{{ project_name }}/admin | python manage.py shell chdir={{ projects_dir }}/{{ project_name }}/
+
+- name: Collect statis
+  django_manage: command=collectstatic app_path={{ projects_dir }}/{{ project_name }}
+
+- name: Set owner to project directory
+  file: path={{ projects_dir }}/{{ project_name }}/ state=directory owner=ubuntu group=www-data recurse=yes
+  sudo: yes
+
+- name: Copy Gunicorn Upstart template
+  template: src=gunicorn.conf.j2 dest=/etc/init/{{ project_name }}.conf
+  sudo: yes
+
+- name: Start Gunicorn
+  service: name={{ project_name }} state=restarted enabled=yes
+  sudo: yes
+  
+- name: Copy Nginx template into sites-available
+  template: src=nginx.conf.j2 dest=/etc/nginx/sites-available/{{ project_name }}.conf
+  sudo: yes
+
+- name: Disable the default Nginx site
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  sudo: yes
+
+- name: Enable new Nginx config
+  file: src=/etc/nginx/sites-available/{{ project_name }}.conf dest=/etc/nginx/sites-enabled/{{ project_name }}.conf state=link
+  sudo: yes
+  notify: restart nginx
+

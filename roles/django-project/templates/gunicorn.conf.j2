@@ -1,0 +1,12 @@
+description "Gunicorn application server handling {{ project_name }}"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+respawn
+setuid nobody
+setgid www-data
+chdir {{ projects_dir }}/{{ project_name }}
+
+exec gunicorn --workers 2 --bind unix:{{ projects_dir }}/{{ project_name }}/{{ project_name }}.sock {{ project_name }}.wsgi:application
+

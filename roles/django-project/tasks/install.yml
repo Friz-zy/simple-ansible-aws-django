@@ -1,0 +1,20 @@
+---
+- name: Install packages with Apt
+  apt: name={{ item }} state=latest update_cache=yes
+  with_items:
+    - python-pip
+    - python-dev
+    - gcc
+    - git
+    - nginx
+    - gunicorn
+    - mysql-client
+    - python-mysqldb
+
+- name: Install Django with Pip
+  pip: name={{ item }}
+  with_items:
+    - django
+
+- name: Create directory for apps
+  file: path={{ projects_dir }} state=directory owner=ubuntu group=www-data

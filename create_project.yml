@@ -1,0 +1,18 @@
+---
+- hosts: tag_Name_test_django
+  remote_user: ubuntu
+  vars:
+    - project_name: myproject
+    - project_dns: myproject.example.com
+    - project_admin_user: admin
+    - project_admin_pass: admin
+    - project_admin_mail: mail@example.com
+
+  pre_tasks:
+    - include_vars: rds_info.yml
+
+  roles:
+    - django-project
+
+
+     

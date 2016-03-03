@@ -1,0 +1,30 @@
+# Tags
+tags:
+  Name: test-django
+  ENV: test
+  application: django
+  server_role: webserver
+
+# ec2_key
+key_name: "devops-key"
+ssh_key_location: ~/.ssh/id_rsa.pub 
+
+# VPC
+vpc_region: us-east-1
+vpc_id: vpc-xxxxx
+vpc_subnet_id: subnet-yyyyy
+
+# EC2
+image: ami-ff427095 # ubuntu trusty 14.04
+
+# RDS settings
+rds_db_engine: MySQL
+rds_db_size: 5
+rds_db_name: django
+rds_instance_type: db.t2.micro
+rds_db_username: django
+rds_db_password: changeThisToSecureOne!
+backup_retention_period: 7
+
+# Apps paths
+projects_dir: /apps

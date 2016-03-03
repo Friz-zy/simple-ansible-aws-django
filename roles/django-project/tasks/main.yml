@@ -1,0 +1,4 @@
+---
+- include: project.yml
+  tags:
+    - project

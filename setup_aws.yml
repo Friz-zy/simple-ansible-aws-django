@@ -1,0 +1,87 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Creates an new ec2 key with mentioned name if not present
+      ec2_key:
+        region: "{{ vpc_region }}"
+        name: "{{ key_name }}"
+        key_material:  "{{ lookup('file',  ssh_key_location ) }}"
+
+    - name: Create ec2 security group
+      ec2_group:
+        name: "allow-inbound-ssh-http-https"
+        description: Allow Inbound Traffic
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ vpc_region }}"
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 443
+            to_port: 443
+            cidr_ip: 0.0.0.0/0
+
+    - name: Create ec2 instance
+      ec2:
+        count: 1
+        wait: yes
+        monitoring: no
+        wait_timeout: 600
+        image: "{{ image }}"
+        assign_public_ip: yes
+        instance_type: t2.micro
+        region: "{{ vpc_region }}"
+        key_name: "{{ key_name }}"
+        instance_tags: "{{ tags }}"
+        vpc_subnet_id: "{{ vpc_subnet_id }}"
+        group: "allow-inbound-ssh-http-https"
+      register: ec2
+
+    - name: Create RDS security group
+      ec2_group:
+        name: "allow-mysql-from-vpc"
+        description: Allow Mysql Traffic
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ vpc_region }}"
+        rules:
+          - proto: tcp
+            from_port: 3306
+            to_port: 3306
+            cidr_ip: "{{ '.'.join(ec2.instances[0].private_ip.split('.')[:2]) + '.0.0/16' }}"
+      register: rds_sg
+
+    - name: Create RDS
+      rds:
+        command: create
+        publicly_accessible: no
+        region: "{{ vpc_region }}"
+        vpc_security_groups: "{{ rds_sg.group_id }}"
+        instance_name: "{{ tags['Name'] }}"
+        db_engine: "{{ rds_db_engine }}"
+        size: "{{ rds_db_size }}"
+        db_name: "{{ rds_db_name }}"
+        instance_type: "{{ rds_instance_type }}"
+        username: "{{ rds_db_username }}"
+        password: "{{ rds_db_password }}"
+        backup_retention: "{{ backup_retention_period }}"
+        wait: yes
+        wait_timeout: 1200
+        tags: "{{ tags }}"
+      register: rds
+
+    - name: Write the RDS facts/values to the file rds_info.yml inside the project directory
+      shell: |
+        echo "db_engine: {{ rds_db_engine|lover }}" > rds_info.yml
+        echo "db_hostname: {{ rds.instance.endpoint }}" >> rds_info.yml
+        echo "db_name: {{ rds_db_name }}" >> rds_info.yml
+        echo "db_username: {{ rds_db_username }}" >> rds_info.yml
+        echo "db_password: {{ rds_db_password }}" >> rds_info.yml

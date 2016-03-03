@@ -1,0 +1,13 @@
+# Overrides
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.{{ db_engine }}',
+        'NAME': '{{ db_name }}',
+        'USER': '{{ db_username }}',
+        'PASSWORD': '{{ db_password }}',
+        'HOST': '{{ db_hostname }}',
+        'PORT': '{{ db_port }}',
+    }
+}
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
