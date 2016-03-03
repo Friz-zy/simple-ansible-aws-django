@@ -130,7 +130,7 @@ project_name/
 - execute Django db migration
 - create superuser with given variables
 - collect static files
-- create Gunicorn config for Upstart personal for project
+- create Gunicorn config for Upstart personal for project that will start as `nobody:www-data`
 - create Nginx config personal for project
 - disable Nginx `default` config
 - restart Nginx and Gunicorn
